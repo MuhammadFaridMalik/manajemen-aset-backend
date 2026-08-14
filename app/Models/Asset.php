@@ -7,15 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class Asset extends Model
 {
     protected $fillable = [
-        "kode_aset",
-        "nama_aset",
-        "category_id",
-        "location_id",
-        "kondisi",
-        "jumlah",
-        "tanggal_perolehan",
-        "keterangan",
-        "created_by"
+        'kode_aset',
+        'nama_aset',
+        'category_id',
+        'location_id',
+        'kondisi',
+        'jumlah',
+        'tanggal_perolehan',
+        'keterangan',
+        'created_by',
     ];
 
     protected $casts = [

@@ -35,6 +35,7 @@ class AssetController extends Controller
     {
         $asset = Asset::create([
             ...$request->validated(),
+            'kode_aset' => Asset::generateKodeAset(),
             'created_by' => $request->user()->id,
         ]);
 

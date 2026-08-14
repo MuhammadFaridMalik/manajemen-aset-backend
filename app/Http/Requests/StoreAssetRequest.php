@@ -15,7 +15,6 @@ class StoreAssetRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'kode_aset' => 'required|string|max:50|unique:assets,kode_aset',
             'nama_aset' => 'required|string|max:150',
             'category_id' => 'required|exists:categories,id',
             'location_id' => 'required|exists:locations,id',
