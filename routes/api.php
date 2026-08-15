@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AssetController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\LocationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/categories/{category}', [CategoryController::class, 'show']);
         Route::get('/locations', [LocationController::class, 'index']);
         Route::get('/locations/{location}', [LocationController::class, 'show']);
+        Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
         });
 
     Route::middleware('role:admin')->group(function () {
