@@ -1,59 +1,99 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistem Manajemen Aset Sekolah — Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Backend API untuk aplikasi pengelolaan data aset/barang sekolah (laptop, proyektor, kursi, dan barang inventaris lainnya). Dibangun dengan Laravel sebagai REST API, dengan autentikasi dan pembatasan akses berbasis role.
 
-## About Laravel
+## Fitur
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Autentikasi berbasis token (Laravel Sanctum)
+- Dua role pengguna: **admin** (akses penuh) dan **staff** (hanya bisa melihat & menambah data)
+- CRUD kategori aset
+- CRUD lokasi/ruangan
+- CRUD data aset, dengan fitur pencarian dan filter berdasarkan kategori/lokasi
+- Kode aset ter-generate otomatis (format `AST-0001`, `AST-0002`, dst) supaya tidak ada input manual yang rawan typo atau duplikat
+- Validasi mencegah kategori/lokasi dihapus selama masih dipakai oleh data aset
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tech Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Framework**: Laravel 12 (API only)
+- **Autentikasi**: Laravel Sanctum
+- **Database**: MySQL
 
-## Learning Laravel
+## Alur Autentikasi & Akses
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Login (POST /api/login)
+   │
+   ▼
+Sanctum memverifikasi kredensial → menerbitkan token
+   │
+   ├── role admin ──► CRUD penuh (kategori, lokasi, aset)
+   └── role staff ──► hanya bisa melihat & menambah aset
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Setiap endpoint yang butuh login mewajibkan header `Authorization: Bearer <token>`. Pembatasan akses per role ditangani lewat middleware (`role:admin` dan `role:admin,staff`) di sisi backend — bukan sekadar disembunyikan di tampilan, jadi tetap terjaga meski ada percobaan akses langsung ke API tanpa lewat antarmuka.
 
-## Laravel Sponsors
+## Struktur Database
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+users        : id, name, email, password, role (admin/staff)
+categories   : id, nama_kategori
+locations    : id, nama_ruangan, lokasi_gedung
+assets       : id, kode_aset, nama_aset, category_id, location_id,
+               kondisi, jumlah, tanggal_perolehan, keterangan, created_by
 
-### Premium Partners
+`categories` dan `locations` masing-masing memiliki relasi `hasMany` ke `assets`. Aset selalu tertaut ke kategori, lokasi, dan pengguna yang menginputnya (`created_by`).
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Endpoint API
 
-## Contributing
+**Autentikasi**
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+POST   /api/login
+POST   /api/logout        (perlu token)
+GET    /api/me             (perlu token)
 
-## Code of Conduct
+**Kategori** (pola yang sama berlaku untuk `/api/locations`)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+GET    /api/categories               admin, staff
+GET    /api/categories/{id}          admin, staff
+POST   /api/categories               admin
+PUT    /api/categories/{id}          admin
+DELETE /api/categories/{id}          admin
 
-## Security Vulnerabilities
+**Aset**
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+GET    /api/assets?search=&category_id=&location_id=   admin, staff
+GET    /api/assets/{id}                                  admin, staff
+POST   /api/assets                                        admin, staff
+PUT    /api/assets/{id}                                   admin
+DELETE /api/assets/{id}                                   admin
 
-## License
+## Menjalankan di Lokal
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+git clone <url-repo-ini>
+cd manajemen-aset-backend
+composer install
+cp .env.example .env
+php artisan key:generate
+```
+
+Sesuaikan konfigurasi `DB_*` di `.env` dengan MySQL lokal, lalu:
+
+```bash
+php artisan migrate
+php artisan serve
+```
+
+## Penggunaan AI dalam Pengerjaan Project
+
+Saya menggunakan **Claude (Anthropic)** sebagai asisten selama membangun backend ini. Cara pakainya:
+
+- **Diskusi struktur sebelum coding** 
+    — sebelum menulis kode, saya bahas dulu rancangan database (ERD) dan alur autentikasi/otorisasi dengan AI, supaya paham alasan di balik setiap keputusan struktur, bukan langsung minta jadi kode.
+- **Diberi penjelasan per langkah, bukan cuma kode jadi** 
+    — setiap bagian (migration, model, middleware, controller) saya minta dijelaskan kenapa ditulis seperti itu, misalnya kenapa validasi dipisah ke Form Request, atau kenapa pengecekan role pakai middleware terpisah.
+- **Bantuan debugging** 
+    — saat menemui error yang belum saya pahami (terutama soal konfigurasi CORS, routing API Laravel 11+, dan koneksi database saat deployment), saya tempel pesan error-nya ke AI dan diarahkan cara mendiagnosisnya, bukan langsung diberi solusi tanpa penjelasan.
+- **Saya yang menjalankan dan memverifikasi semuanya sendiri** 
+    — setiap perintah tetap saya jalankan sendiri di terminal, saya baca hasil/errornya, dan saya yang memutuskan langkah berikutnya. AI berperan sebagai tempat bertanya dan diskusi, bukan yang mengerjakan project secara otomatis.
+
+## Penulis
+
+Muhammad Farid Malik
