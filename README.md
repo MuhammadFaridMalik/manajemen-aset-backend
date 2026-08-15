@@ -20,52 +20,59 @@ Backend API untuk aplikasi pengelolaan data aset/barang sekolah (laptop, proyekt
 
 ## Alur Autentikasi & Akses
 
+```mermaid
 flowchart TD
     A[Login - POST /api/login] --> B[Sanctum verifikasi kredensial<br/>lalu menerbitkan token]
     B --> C{Role?}
     C -->|admin| D[CRUD penuh:<br/>kategori, lokasi, aset]
     C -->|staff| E[Hanya bisa melihat<br/>dan menambah aset]
+```
 
 Setiap endpoint yang butuh login mewajibkan header `Authorization: Bearer <token>`. Pembatasan akses per role ditangani lewat middleware (`role:admin` dan `role:admin,staff`) di sisi backend — bukan sekadar disembunyikan di tampilan, jadi tetap terjaga meski ada percobaan akses langsung ke API tanpa lewat antarmuka.
 
 ## Struktur Database
 
+```
 users        : id, name, email, password, role (admin/staff)
 categories   : id, nama_kategori
 locations    : id, nama_ruangan, lokasi_gedung
 assets       : id, kode_aset, nama_aset, category_id, location_id,
                kondisi, jumlah, tanggal_perolehan, keterangan, created_by
+```
 
 `categories` dan `locations` masing-masing memiliki relasi `hasMany` ke `assets`. Aset selalu tertaut ke kategori, lokasi, dan pengguna yang menginputnya (`created_by`).
 
 ## Endpoint API
 
 **Autentikasi**
-
+```
 POST   /api/login
 POST   /api/logout        (perlu token)
 GET    /api/me             (perlu token)
+```
 
 **Kategori** (pola yang sama berlaku untuk `/api/locations`)
-
+```
 GET    /api/categories               admin, staff
 GET    /api/categories/{id}          admin, staff
 POST   /api/categories               admin
 PUT    /api/categories/{id}          admin
 DELETE /api/categories/{id}          admin
+```
 
 **Aset**
-
+```
 GET    /api/assets?search=&category_id=&location_id=   admin, staff
 GET    /api/assets/{id}                                  admin, staff
 POST   /api/assets                                        admin, staff
 PUT    /api/assets/{id}                                   admin
 DELETE /api/assets/{id}                                   admin
+```
 
 ## Menjalankan di Lokal
 
 ```bash
-git clone <url-repo-ini>
+git clone https://github.com/username/manajemen-aset-backend.git
 cd manajemen-aset-backend
 composer install
 cp .env.example .env
