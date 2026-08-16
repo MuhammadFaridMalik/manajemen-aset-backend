@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -25,8 +26,10 @@ class AssetController extends Controller
             ->when($request->location_id, function ($query, $locationId) {
                 $query->where('location_id', $locationId);
             })
-            ->latest()
-            ->paginate(10);
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate(10)
+            ->withQueryString();
 
         return AssetResource::collection($assets);
     }
