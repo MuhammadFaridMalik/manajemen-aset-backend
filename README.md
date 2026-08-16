@@ -48,7 +48,7 @@ assets       : id, kode_aset, nama_aset, category_id, location_id,
 **Autentikasi**
 ```
 POST   /api/login
-POST   /api/logout        (perlu token)
+POST   /api/logout         (perlu token)
 GET    /api/me             (perlu token)
 ```
 
@@ -79,7 +79,7 @@ Mengembalikan total aset, jumlah jenis barang, jumlah kategori/lokasi, distribus
 ## Menjalankan di Lokal
 
 ```bash
-git clone <url-repo-ini>
+git clone https://github.com/MuhammadFaridMalik/manajemen-aset-backend.git
 cd manajemen-aset-backend
 composer install
 cp .env.example .env
