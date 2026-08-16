@@ -63,8 +63,8 @@ DELETE /api/categories/{id}          admin
 
 **Aset**
 ```
-GET    /api/assets?search=&category_id=&location_id=&page=   admin, staff
-GET    /api/assets/{id}                                        admin, staff
+GET    /api/assets?search=&category_id=&location_id=&page=      admin, staff
+GET    /api/assets/{id}                                         admin, staff
 POST   /api/assets                                              admin, staff
 PUT    /api/assets/{id}                                         admin
 DELETE /api/assets/{id}                                         admin
