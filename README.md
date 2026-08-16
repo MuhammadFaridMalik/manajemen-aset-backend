@@ -8,8 +8,9 @@ Backend API untuk aplikasi pengelolaan data aset/barang sekolah (laptop, proyekt
 - Dua role pengguna: **admin** (akses penuh) dan **staff** (hanya bisa melihat & menambah data)
 - CRUD kategori aset
 - CRUD lokasi/ruangan
-- CRUD data aset, dengan fitur pencarian dan filter berdasarkan kategori/lokasi
-- Kode aset ter-generate otomatis (format `AST-0001`, `AST-0002`, dst) supaya tidak ada input manual yang rawan typo atau duplikat
+- CRUD data aset, dengan pencarian, filter berdasarkan kategori/lokasi, dan pagination
+- Kode aset ter-generate otomatis (format `AST-0001`, `AST-0002`, dst)
+- Endpoint statistik agregat untuk dashboard (total aset, distribusi kondisi, aset per kategori)
 - Validasi mencegah kategori/lokasi dihapus selama masih dipakai oleh data aset
 
 ## Tech Stack
@@ -62,17 +63,23 @@ DELETE /api/categories/{id}          admin
 
 **Aset**
 ```
-GET    /api/assets?search=&category_id=&location_id=      admin, staff
-GET    /api/assets/{id}                                   admin, staff
-POST   /api/assets                                        admin, staff
-PUT    /api/assets/{id}                                   admin
-DELETE /api/assets/{id}                                   admin
+GET    /api/assets?search=&category_id=&location_id=&page=   admin, staff
+GET    /api/assets/{id}                                        admin, staff
+POST   /api/assets                                              admin, staff
+PUT    /api/assets/{id}                                         admin
+DELETE /api/assets/{id}                                         admin
 ```
+
+**Dashboard**
+```
+GET    /api/dashboard/stats   admin, staff
+```
+Mengembalikan total aset, jumlah jenis barang, jumlah kategori/lokasi, distribusi kondisi (baik/rusak ringan/rusak berat), dan total aset per kategori — dipakai untuk kartu statistik dan grafik di dashboard frontend.
 
 ## Menjalankan di Lokal
 
 ```bash
-git clone https://github.com/username/manajemen-aset-backend.git
+git clone <url-repo-ini>
 cd manajemen-aset-backend
 composer install
 cp .env.example .env
@@ -90,8 +97,8 @@ php artisan serve
 Saya menggunakan **Claude (Anthropic)** sebagai asisten selama membangun backend ini. Cara pakainya:
 
 - **Diskusi struktur sebelum coding** — sebelum menulis kode, saya bahas dulu rancangan database (ERD) dan alur autentikasi/otorisasi dengan AI, supaya paham alasan di balik setiap keputusan struktur, bukan langsung minta jadi kode.
-- **Diberi penjelasan per langkah, bukan cuma kode jadi** — setiap bagian (migration, model, middleware, controller) saya minta dijelaskan kenapa ditulis seperti itu, misalnya kenapa validasi dipisah ke Form Request, atau kenapa pengecekan role pakai middleware terpisah.
-- **Bantuan debugging** — saat menemui error yang belum saya pahami (terutama soal konfigurasi CORS, routing API Laravel 11+, dan koneksi database saat deployment), saya tempel pesan error-nya ke AI dan diarahkan cara mendiagnosisnya, bukan langsung diberi solusi tanpa penjelasan.
+- **Diberi penjelasan per langkah, bukan cuma kode jadi** — setiap bagian (migration, model, middleware, controller) saya minta dijelaskan kenapa ditulis seperti itu, misalnya kenapa validasi dipisah ke Form Request, kenapa pengecekan role pakai middleware terpisah, atau kenapa urutan data perlu tie-breaker `id` selain `created_at`.
+- **Bantuan debugging** — saat menemui error yang belum saya pahami (soal konfigurasi CORS, routing API Laravel 11+, koneksi database internal Railway, sampai bug data yang saling menutupi saat menambah fitur statistik), saya tempel pesan error-nya ke AI dan diarahkan cara mendiagnosisnya, bukan langsung diberi solusi tanpa penjelasan.
 - **Saya yang menjalankan dan memverifikasi semuanya sendiri** — setiap perintah tetap saya jalankan sendiri di terminal, saya baca hasil/errornya, dan saya yang memutuskan langkah berikutnya. AI berperan sebagai tempat bertanya dan diskusi, bukan yang mengerjakan project secara otomatis.
 
 ## Penulis
